@@ -1,10 +1,10 @@
 import rclpy
 from rclpy.node import Node
-from time import sleep
-from time import time
 
 from sensor_msgs.msg import Joy
 from fino_ros2_msgs.srv import ExecuteCommand
+
+skill_list = ["kbalance", "kwkF", "kwkR", "kwkL", "kbk", "kcalib", "khi", "ksit"]
 
 class JoyControl(Node):
 
@@ -17,6 +17,12 @@ class JoyControl(Node):
         self.req = ExecuteCommand.Request()
 
         self.client_futures = []
+        # self.dir = 'kbalance'
+        # self.last_call = None
+        # self.button_pressed = False
+        # self.kbalance_sent = False
+        self.previous_buttons = [0] * 4  # Assuming there are 4 buttons
+        self.previous_axes = [0] * 2
 
         self.joy_subscription = self.create_subscription(
             Joy,
@@ -26,45 +32,59 @@ class JoyControl(Node):
         )
         self.joy_subscription
 
+        self.has_been_called = False
+
     def send_command(self, command):
             self.get_logger().info('calling service')
             self.req.command = command
             self.client_futures.append(self.command_client.call_async(self.req))
 
     def listener_callback(self, msg):
-        self.get_logger().info(f"data : {msg.buttons}")
+        #self.get_logger().info(f"data : {msg.buttons}")
 
-        # Balance
-        if msg.buttons[0] == 1:
-            self.send_command("kbalance")
+        dir = None
+        if not self.has_been_called:
+            # Action to perform only on the first call
+            dir = "kbalance"
+            self.has_been_called = True
 
-        # Button2
-        if msg.buttons[1] == 1:
-            pass
+        button_commands = {
+            0: "khi",
+            1: "ksit",
+            2: "krest",
+            3: "kcalib"
+        }
 
-        # Button3
-        if msg.buttons[2] == 1:
-            pass
+        axis_commands = {
+            (1, 1.0): "kwkF",
+            (1, -1.0): "kbk",
+            (0, 1.0): "kwkL",
+            (0, -1.0): "kwkR"
+        }
 
-        # Button4
-        if msg.buttons[3] == 1:
-            self.send_command("kcalib")
-
-        # Avancer
-        if msg.axes[1] == 1.0:
-            self.send_command("kwkF")
-
-        # Reculer
-        if msg.axes[1] == -1.0:
-            self.send_command("kbk")
-
-        # Tourner à gauche
-        if msg.axes[0] == 1.0:
-            pass
-
-        # Tourner à droite
-        if msg.axes[0] == -1.0:
-            pass
+        # Check button presses
+        for i, command in button_commands.items():
+            if msg.buttons[i] == 1 and self.previous_buttons[i] == 0:
+                dir = command
+                break
+        else:
+            # Check axes for movement
+            for (axis, value), command in axis_commands.items():
+                if msg.axes[axis] == value and self.previous_axes[axis] != value:
+                    dir = command
+                    break
+                else:
+                    if msg.axes[axis] == 0 and (self.previous_axes[axis] == 1.0 or self.previous_axes[axis] == -1.0):
+                        dir = "kbalance"
+                        break
+            
+        if dir is not None:
+            self.get_logger().info(f"Sending command : {dir}")
+            self.send_command(dir)
+        
+        # Update previous states
+        self.previous_buttons = msg.buttons[:4]
+        self.previous_axes = msg.axes[:2]
 
     def spin(self):
         while rclpy.ok():

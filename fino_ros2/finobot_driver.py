@@ -26,13 +26,12 @@ class Driver(Node):
         return response
     
     def wrapper(self, task):  # Structure is [token, var=[], time]
-        print(task)
+        self.get_logger().info("Task : " + str(task))
         if len(task) == 2:
             self.serialWriteByte([task[0]])
         elif isinstance(task[1][0], int):
             self.serialWriteNumToByte(task[0], task[1])
         else:
-            print("Task: "); print(task[1]); print("\n\n")
             self.serialWriteByte(task[1])
         time.sleep(task[-1])
         
@@ -43,7 +42,7 @@ class Driver(Node):
             instrStr = token + struct.pack('b' * len(var), *var) + '~'
         elif token == 'c' or token == 'm' or token == 'u' or token == 'b':
             instrStr = token + str(var[0]) + " " + str(var[1]) + '\n'
-        print("!!!!" + instrStr)
+        self.get_logger().info("!!!!" + instrStr)
         self.serial_comm.write(instrStr.encode())
 
     def serialWriteByte(self, var=[]):
@@ -64,7 +63,7 @@ class Driver(Node):
             instrStr = var[0] + '\n'
         else:
             instrStr = token
-        print("!!!!!!! " + instrStr)
+        self.get_logger().info("!!!!!!! " + instrStr)
         self.serial_comm.write(instrStr.encode())
 
 
