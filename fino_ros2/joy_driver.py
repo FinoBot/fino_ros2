@@ -13,7 +13,7 @@ class JoyControl(Node):
 
         self.command_client = self.create_client(ExecuteCommand, "execute_command")
         while not self.command_client.wait_for_service(timeout_sec=1.0):
-           self.get_logger().info('service not available, waiting again...')
+           self.get_logger().info('serial service not available, waiting again...')
         self.req = ExecuteCommand.Request()
 
         self.client_futures = []
