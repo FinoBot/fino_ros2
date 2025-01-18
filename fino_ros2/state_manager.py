@@ -36,10 +36,12 @@ class StateManager(Node):
 
     def detection_callback(self, msg):
         # Mise à jour de la position cible à partir de la détection
-
-        self.target_position = msg.point
-        self.last_seen_time = time.time()
-        self.get_logger().info(f"Received target position: x={self.target_position.x}, z={self.target_position.z}")
+        if msg is None:
+            self.target_position = None
+        else:
+            self.target_position = msg.point
+            self.last_seen_time = time.time()
+            self.get_logger().info(f"Received target position: x={self.target_position.x}, z={self.target_position.z}")
 
     def update_state(self):
         now = time.time()
