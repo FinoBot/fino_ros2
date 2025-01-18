@@ -64,11 +64,11 @@ class StateManager(Node):
         elif self.state == 'move_to_person':
             if self.target_position:
                 distance = self.target_position.z
-                if 1 <= distance <= 1.5:
+                if distance <= 1.5:
                     self.state = 'stand_by'
                     self.get_logger().info("Arrived at target, switching to stand_by state")
                     self.publish_command('stop')
-                elif now - self.last_seen_time > 5:
+                elif now - self.last_seen_time > 1:
                     self.state = 'search_interaction'
                     self.get_logger().info("Lost target, switching to search_interaction state")
                     self.publish_command('search_interaction')
