@@ -44,7 +44,7 @@ class MovementController(Node):
     def adjust_position(self, position):
         x, z = position.x, position.z
 
-        if abs(x) > 0.1:
+        if abs(x) > 0.25:
             if x > 0:
                 self.send_command('kwkR')  # Turn right
                 self.get_logger().info("Adjusting position: moving right")

@@ -43,6 +43,7 @@ class StateManager(Node):
 
     def update_state(self):
         now = time.time()
+        self.get_logger().info(f"Current state: {self.state}")
 
         if self.state == 'initialization':
             self.get_logger().info("Checking topics and services...")
@@ -75,13 +76,19 @@ class StateManager(Node):
                     self.send_command('kbalance')
 
         elif self.state == 'stand_by':
-            if now - self.last_action_time > 300:  # 5 minutes
+            self.send_command('ksit')
+            if now - self.last_action_time > 120:  # 2 minutes
                 self.state = 'rest'
                 self.get_logger().info("Switching to rest state")
                 self.publish_command('rest')
 
         elif self.state == 'rest':
             self.get_logger().info("In rest state, conserving energy.")
+            if self.target_position:
+                self.state = 'search_interaction'
+                self.get_logger().info("New target after rest, switching to search_interaction state")
+                self.publish_command('search_interaction')
+                self.send_command('kbalance')
 
     def publish_command(self, command):
         msg = String()
