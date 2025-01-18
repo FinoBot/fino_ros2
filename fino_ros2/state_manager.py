@@ -97,8 +97,11 @@ class StateManager(Node):
         self.get_logger().info(f"Command sent: {command}")
 
     def send_command(self, command):
-        self.req.command = command
-        self.client_futures.append(self.command_client.call_async(self.req))
+        if command != self.last_action:
+            self.req.command = command
+            self.client_futures.append(self.command_client.call_async(self.req))
+            self.last_action = command
+            self.last_action_time = time.time()
 
 def main(args=None):
     rclpy.init(args=args)
