@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import PointStamped
+from fino_ros2_msgs.msg import DetectedPerson
 from fino_ros2_msgs.srv import ExecuteCommand
 import time
 
@@ -16,7 +16,7 @@ class StateManager(Node):
 
         # Abonnement à la détection des humains
         self.detection_sub = self.create_subscription(
-            PointStamped,
+            DetectedPerson,
             '/detected_person',
             self.detection_callback,
             10
@@ -36,12 +36,13 @@ class StateManager(Node):
 
     def detection_callback(self, msg):
         # Mise à jour de la position cible à partir de la détection
-        if msg is None:
-            self.target_position = None
-        else:
-            self.target_position = msg.point
+        if msg.detected:
+            self.target_position = msg.position
             self.last_seen_time = time.time()
             self.get_logger().info(f"Received target position: x={self.target_position.x}, z={self.target_position.z}")
+        else:
+            self.target_position = None
+            self.get_logger().info("Did not receive target")
 
     def update_state(self):
         now = time.time()

@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Detection3DArray
-from geometry_msgs.msg import PointStamped
+from fino_ros2_msgs.msg import DetectedPerson
 import time
 import uuid
 
@@ -17,7 +17,7 @@ class HumanDetector(Node):
             10
         )
         self.camera_detections
-        self.publisher = self.create_publisher(PointStamped, '/detected_person', 10)
+        self.publisher = self.create_publisher(DetectedPerson, '/detected_person', 10)
 
         # Historical detections: {uuid: (initial detection time, current position)}
         self.detection_history = {}
@@ -92,15 +92,17 @@ class HumanDetector(Node):
         return min(stable_persons, key=lambda p: p[1].z)[1]
 
     def publish_human_position(self, position):
-        msg = PointStamped()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = "camera_frame"
-        msg.point.x = position.x
-        msg.point.y = position.y
-        msg.point.z = position.z
-
+        msg = DetectedPerson()
+        if position:
+            msg.detected = True
+            msg.point.x = position.x
+            msg.point.y = position.y
+            msg.point.z = position.z
+            self.get_logger().info(f"Published closest stable person at position: {position}")
+        else:
+            msg.detected = False
+            self.get_logger().info("No stable person detected")
         self.publisher.publish(msg)
-        self.get_logger().info(f"Published closest stable person at position: {position}")
 
 def main(args=None):
     rclpy.init(args=args)
