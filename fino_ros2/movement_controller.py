@@ -38,7 +38,7 @@ class MovementController(Node):
 
     def person_callback(self, msg):
         self.current_target = msg.point
-        if self.current_state == 'move_to_person':
+        if self.current_state == 'move_to_person' or self.current_state == 'following':
             self.adjust_position(self.current_target)
 
     def adjust_position(self, position):

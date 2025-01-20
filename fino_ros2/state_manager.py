@@ -4,6 +4,9 @@ from std_msgs.msg import String
 from fino_ros2_msgs.msg import DetectedPerson
 from fino_ros2_msgs.srv import ExecuteCommand
 import time
+from lifecycle_msgs.srv import ChangeState, GetState
+from lifecycle_msgs.msg import Transition
+
 
 class StateManager(Node):
     def __init__(self):
@@ -31,8 +34,36 @@ class StateManager(Node):
         self.req = ExecuteCommand.Request()
 
         self.client_futures = []
+
         # Timer pour gérer les états
         self.timer = self.create_timer(0.5, self.update_state)
+
+        # Services pour les noeuds externes
+    #     self.change_state_following_minigame = self.create_client(ChangeState, '/<node_name>/change_state')
+    #     self.get_state_following_minigame = self.create_client(GetState, '/<node_name>/get_state')
+
+    # def get_current_external_node_state(self, get_state_following):
+    #     request = GetState.Request()
+    #     future = self.get_state_following.call_async(request)
+    #     rclpy.spin_until_future_complete(self, future)
+    #     if future.result() is not None:
+    #         state_id = future.result().current_state.id
+    #         state_label = future.result().current_state.label
+    #         return f'{state_label} (ID: {state_id})'
+    #     else:
+    #         self.get_logger().error('Failed to get current state.')
+    #         return 'Unknown'
+
+    # def activate_external_node_state(self, transition_id):
+    #     request = ChangeState.Request()
+    #     request.transition.id = transition_id
+
+    #     future = self.change_state_following.call_async(request)
+    #     rclpy.spin_until_future_complete(self, future)
+    #     if future.result() is not None and future.result().success:
+    #         self.get_logger().info(f'Successfully performed transition ID {transition_id}.')
+    #     else:
+    #         self.get_logger().error(f'Failed to perform transition ID {transition_id}.')
 
     def detection_callback(self, msg):
         # Mise à jour de la position cible à partir de la détection
@@ -43,6 +74,11 @@ class StateManager(Node):
         else:
             self.target_position = None
             self.get_logger().info("Did not receive target")
+
+    def change_state(self, state):
+        self.state = state
+        self.publish_command(state)
+
 
     def update_state(self):
         now = time.time()
@@ -57,41 +93,38 @@ class StateManager(Node):
 
         elif self.state == 'search_interaction':
             self.get_logger().info("Searching for interaction...")
-            # if self.last_action != 'ksit':
-            #     self.send_command('ksit')
-            #     self.last_action = 'ksit'
-            if self.target_position:
-                self.state = 'move_to_person'
+            if self.target_position and self.target_position.z > 1.5:
                 self.get_logger().info("Switching to move_to_person state")
-                self.publish_command('move_to_person')
+                self.change_state(self, 'move_to_person')
+            else:
+                self.change_state(self, 'change_state')
 
         elif self.state == 'move_to_person':
             if self.target_position:
                 distance = self.target_position.z
                 if distance <= 1.5:
-                    self.state = 'stand_by'
                     self.get_logger().info("Arrived at target, switching to stand_by state")
+                    self.change_state(self, 'stand_by')
                     self.publish_command('stop')
                 elif now - self.last_seen_time > 1:
-                    self.state = 'search_interaction'
                     self.get_logger().info("Lost target, switching to search_interaction state")
-                    self.publish_command('search_interaction')
+                    self.change_state(self, 'search_interaction')
                     self.send_command('kbalance')
 
         elif self.state == 'stand_by':
             self.send_command('ksit')
             if now - self.last_action_time > 120:  # 2 minutes
-                self.state = 'rest'
                 self.get_logger().info("Switching to rest state")
-                self.publish_command('rest')
+                self.change_state(self, 'rest')
 
         elif self.state == 'rest':
-            self.get_logger().info("In rest state, conserving energy.")
             if self.target_position:
-                self.state = 'search_interaction'
                 self.get_logger().info("New target after rest, switching to search_interaction state")
-                self.publish_command('search_interaction')
+                self.change_state(self, 'search_interaction')
                 self.send_command('kbalance')
+
+        elif self.state == 'following':
+            pass
 
     def publish_command(self, command):
         msg = String()
