@@ -24,14 +24,12 @@ class HumanDetector(Node):
         self.get_logger().info("Human detector node initialized")
 
     def detection_callback(self, msg):
-        self.get_logger().info("Camera detection callback")
         current_time = time.time()
         new_detections = {}
 
         for detection in msg.detections:
             class_id = detection.results[0].hypothesis.class_id
             if LABELS[int(class_id)] == "person":
-                self.get_logger().info("Human detected")
                 position = detection.results[0].pose.pose.position
                 self.get_logger().info(f"Position {position}")
                 detection_id = self.get_detection_id(detection)
@@ -39,15 +37,21 @@ class HumanDetector(Node):
                 # Update or add the detection
                 if detection_id in self.detection_history:
                     new_detections[detection_id] = self.detection_history[detection_id]
+                    new_detections[detection_id]["time"] = self.detection_history[detection_id]["time"]
+                    new_detections[detection_id]["position"] = position
                 else:
-                    new_detections[detection_id] = (current_time, position)
+                    new_detections[detection_id] = {}
+                    new_detections[detection_id]["time"] = current_time
+                    new_detections[detection_id]["position"] = position
 
         # Update the history
         if new_detections:
+            self.get_logger().info(f"New detections : {new_detections}")
             self.detection_history = new_detections
-            self.get_logger().info(f"Detections: {self.detection_history}")
+            #self.get_logger().info(f"Detections: {self.detection_history}")
             # Find the closest and stable person
             response_to_send = self.get_stable_closest_person(current_time)
+            #self.get_logger().info(f"Closest stable person: {response_to_send}")
         else:
             response_to_send = None
             self.get_logger().info("No new detections")
@@ -61,7 +65,7 @@ class HumanDetector(Node):
         """
         position = detection.results[0].pose.pose.position
         for detection_id, data in self.detection_history.items():
-            if self.is_same_detection(data[1], position):
+            if self.is_same_detection(data["position"], position):
                 return detection_id
         return str(uuid.uuid4())
 
@@ -80,9 +84,9 @@ class HumanDetector(Node):
         Find the closest person
         """
         stable_persons = [
-            (detection_id, data[1])  # (id_personne, position)
+            (detection_id, data["position"])  # (id_personne, position)
             for detection_id, data in self.detection_history.items()
-            if current_time - data[0] >= 5
+            if current_time - data["time"] >= 5
         ]
 
         if not stable_persons:
@@ -95,10 +99,10 @@ class HumanDetector(Node):
         msg = DetectedPerson()
         if position:
             msg.detected = True
-            msg.point.x = position.x
-            msg.point.y = position.y
-            msg.point.z = position.z
-            self.get_logger().info(f"Published closest stable person at position: {position}")
+            msg.position.x = position.x
+            msg.position.y = position.y
+            msg.position.z = position.z
+            self.get_logger().info(f"Published closest stable person at position:  x={position.x}, z={position.z}")
         else:
             msg.detected = False
             self.get_logger().info("No stable person detected")

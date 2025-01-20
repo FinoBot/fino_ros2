@@ -52,7 +52,7 @@ def generate_launch_description():
     return LaunchDescription([
         camera_launch,
         driver,
-        movement_controller,
         human_detector,
         state_manager,
+        movement_controller,
     ])

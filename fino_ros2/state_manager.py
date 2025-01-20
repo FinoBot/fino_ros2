@@ -89,38 +89,35 @@ class StateManager(Node):
             # Initialisation logic
             self.send_command('kbalance')
             time.sleep(1)
-            self.state = 'search_interaction'
+            self.change_state('following')
 
         elif self.state == 'search_interaction':
             self.get_logger().info("Searching for interaction...")
             if self.target_position and self.target_position.z > 1.5:
                 self.get_logger().info("Switching to move_to_person state")
-                self.change_state(self, 'move_to_person')
-            else:
-                self.change_state(self, 'change_state')
+                self.change_state('move_to_person')
 
         elif self.state == 'move_to_person':
             if self.target_position:
                 distance = self.target_position.z
                 if distance <= 1.5:
                     self.get_logger().info("Arrived at target, switching to stand_by state")
-                    self.change_state(self, 'stand_by')
-                    self.publish_command('stop')
+                    self.change_state('stand_by')
                 elif now - self.last_seen_time > 1:
                     self.get_logger().info("Lost target, switching to search_interaction state")
-                    self.change_state(self, 'search_interaction')
+                    self.change_state('search_interaction')
                     self.send_command('kbalance')
 
         elif self.state == 'stand_by':
             self.send_command('ksit')
             if now - self.last_action_time > 120:  # 2 minutes
                 self.get_logger().info("Switching to rest state")
-                self.change_state(self, 'rest')
+                self.change_state('rest')
 
         elif self.state == 'rest':
             if self.target_position:
                 self.get_logger().info("New target after rest, switching to search_interaction state")
-                self.change_state(self, 'search_interaction')
+                self.change_state('search_interaction')
                 self.send_command('kbalance')
 
         elif self.state == 'following':

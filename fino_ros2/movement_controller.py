@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import PointStamped
+from fino_ros2_msgs.msg import DetectedPerson
 from fino_ros2_msgs.srv import ExecuteCommand
 
 class MovementController(Node):
@@ -14,7 +14,7 @@ class MovementController(Node):
             10
         )
         self.subscription_target = self.create_subscription(
-            PointStamped,
+            DetectedPerson,
             '/detected_person',
             self.person_callback,
             10
@@ -37,7 +37,8 @@ class MovementController(Node):
             self.send_command('kbalance')
 
     def person_callback(self, msg):
-        self.current_target = msg.point
+        self.current_target = msg.position
+        self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
         if self.current_state == 'move_to_person' or self.current_state == 'following':
             self.adjust_position(self.current_target)
 
@@ -54,6 +55,8 @@ class MovementController(Node):
         elif z > 1.5:
             self.send_command('kwkF')  # Move forward
             self.get_logger().info("Moving forward")
+        else:
+            self.send_command('kbalance')
 
     def send_command(self, command):
         self.req.command = command
