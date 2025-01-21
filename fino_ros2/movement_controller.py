@@ -49,8 +49,9 @@ class MovementController(Node):
                     self.send_command('kbalance')
                     self.lost_person_counter = 0
                     self.get_logger().info("Person lost, stopping movement")
-                self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/5")
-                self.lost_person_counter += 1
+                else:
+                    self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/5")
+                    self.lost_person_counter += 1
 
 
     def adjust_position(self, position):
