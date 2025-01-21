@@ -44,7 +44,13 @@ class MovementController(Node):
             if msg.detected:
                 self.adjust_position(self.current_target)
             else:
-                self.send_command('kbalance')
+                if self.lost_person_counter < 5:
+                    self.send_command('kbalance')
+                    self.lost_person_counter = 0
+                    self.get_logger().info("Person lost, stopping movement")
+                self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/5")
+                self.lost_person_counter += 1
+
 
     def adjust_position(self, position):
         x, z = position.x, position.z
@@ -61,7 +67,6 @@ class MovementController(Node):
             self.get_logger().info("Moving forward")
         else:
             self.send_command('kbalance')
-            self.get_logger().info("entering else, doing kbalance")
 
     def send_command(self, command):
         if command == self.last_command:
