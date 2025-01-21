@@ -25,6 +25,6 @@ docker run -it --privileged --rm --network host -v /dev/ttyS0:/dev/ttyS0 finoros
 Start all nodes including the camera spatial bb launch file:
 
 ```bash
-docker build -f fino_ros2/Dockerfile-merge -t finoros2_and_camera .
-docker run --privileged --rm --restart unless-stopped --network host -v /dev/ttyS0:/dev/ttyS0 -v /dev/bus/usb:/dev/bus/usb finoros2_and_camera /bin/bash -c "source install/setup.bash && ros2 launch fino_ros2 finobot_launch.py"
+docker build -f fino_ros2/Dockerfile -t finoros2 .
+docker run --privileged --rm --network host -v /dev/ttyS0:/dev/ttyS0 -v /dev/bus/usb:/dev/bus/usb finoros2 /bin/bash -c "source install/setup.bash && ros2 launch fino_ros2 finobot_launch.py"
 ```
