@@ -101,7 +101,7 @@ class StateManager(Node):
             # Initialisation logic
             self.send_command('kbalance')
             time.sleep(1)
-            self.change_state('following')
+            self.change_state('search_interaction')
 
         elif self.state == 'hi':
             self.get_logger().info("Saying hi...")
