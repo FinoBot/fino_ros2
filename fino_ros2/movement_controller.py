@@ -40,7 +40,8 @@ class MovementController(Node):
         self.current_target = msg.position
         self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
         if self.current_state == 'move_to_person' or self.current_state == 'following':
-            self.adjust_position(self.current_target)
+            if msg.detected:
+                self.adjust_position(self.current_target)
 
     def adjust_position(self, position):
         x, z = position.x, position.z
