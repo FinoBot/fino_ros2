@@ -39,22 +39,22 @@ class HumanDetector(Node):
                     new_detections[detection_id] = self.detection_history[detection_id]
                     new_detections[detection_id]["time"] = self.detection_history[detection_id]["time"]
                     new_detections[detection_id]["position"] = position
+                    self.get_logger().info(f"Updated position of person to follow:  x={round(position.x,2)}, z={round(position.z,2)}")
                 else:
                     new_detections[detection_id] = {}
                     new_detections[detection_id]["time"] = current_time
                     new_detections[detection_id]["position"] = position
+                    self.get_logger().info(f"Added new person to follow:  x={round(position.x,2)}, z={round(position.z,2)}")
 
         # Update the history
         if new_detections:
-            self.get_logger().info(f"New detections : {new_detections}")
+            #self.get_logger().info(f"New detections : {new_detections}")
             self.detection_history = new_detections
-            #self.get_logger().info(f"Detections: {self.detection_history}")
             # Find the closest and stable person
             response_to_send = self.get_stable_closest_person(current_time)
-            #self.get_logger().info(f"Closest stable person: {response_to_send}")
         else:
             response_to_send = None
-            self.get_logger().info("No new detections")
+            #self.get_logger().info("No new detections")
 
 
         self.publish_human_position(response_to_send)
@@ -102,10 +102,10 @@ class HumanDetector(Node):
             msg.position.x = position.x
             msg.position.y = position.y
             msg.position.z = position.z
-            self.get_logger().info(f"Published closest stable person at position:  x={position.x}, z={position.z}")
+            #self.get_logger().info(f"Published closest stable person at position:  x={position.x}, z={position.z}")
         else:
             msg.detected = False
-            self.get_logger().info("No stable person detected")
+            #self.get_logger().info("No stable person detected")
         self.publisher.publish(msg)
 
 def main(args=None):

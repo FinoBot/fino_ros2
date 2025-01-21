@@ -34,7 +34,6 @@ class MovementController(Node):
 
     def state_callback(self, msg):
         self.current_state = msg.data
-        self.get_logger().info(f"State command received: {self.current_state}")
         if self.current_state == 'stop':
             self.send_command('kbalance')
 
@@ -50,7 +49,7 @@ class MovementController(Node):
                     self.lost_person_counter = 0
                     self.get_logger().info("Person lost, stopping movement")
                 else:
-                    self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/15")
+                    self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/25")
                     self.lost_person_counter += 1
 
 
@@ -60,10 +59,10 @@ class MovementController(Node):
         if abs(x) > 0.25:
             if x > 0:
                 self.send_command('kwkR')  # Turn right
-                self.get_logger().info("Adjusting position: moving right")
+                self.get_logger().info("Adjusting position: turning right")
             else:
                 self.send_command('kwkL')  # Turn left
-                self.get_logger().info("Adjusting position: moving left")
+                self.get_logger().info("Adjusting position: turning left")
         elif z > 1.5:
             self.send_command('kwkF')  # Move forward
             self.get_logger().info("Moving forward")
