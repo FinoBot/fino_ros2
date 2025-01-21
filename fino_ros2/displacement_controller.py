@@ -58,8 +58,7 @@ class DisplacementController(Node):
 
         if self.current_state == 'search_interaction':
             if msg.detected:
-                distance = msg.position.z
-                if distance < 1:
+                if msg.position.z < 1:
                     self.get_logger().info("Arrived at target, Ask to change to stand_by state")
                     self.state_instruction_reply.publish(String(data='target_reached'))
                 else:
@@ -68,7 +67,7 @@ class DisplacementController(Node):
                 self.handle_person_lost()
         elif self.current_state == 'following':
             if msg.detected:
-                if distance < 1:
+                if msg.position.z < 1:
                     self.send_command('kbalance')
                 else:
                     self.adjust_position(self.current_target)
