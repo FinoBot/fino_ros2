@@ -54,7 +54,7 @@ class MovementController(Node):
 
     def person_callback(self, msg):
         self.current_target = msg.position
-        self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
+        #self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
 
         if self.current_state == 'move_to_person':
             if msg.detected:

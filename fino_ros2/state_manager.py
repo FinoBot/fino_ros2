@@ -3,7 +3,6 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from fino_ros2_msgs.srv import ExecuteCommand
-from fino_ros2_msgs.srv import StateInstruction
 
 AUDIO_COMMANDS_FOLLOW = "suis-moi"
 AUDIO_COMMANDS_STOP = "stop"
