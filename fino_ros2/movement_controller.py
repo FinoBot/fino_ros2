@@ -57,6 +57,7 @@ class MovementController(Node):
             self.get_logger().info("Moving forward")
         else:
             self.send_command('kbalance')
+            self.get_logger().info("entering else, doing kbalance")
 
     def send_command(self, command):
         self.req.command = command

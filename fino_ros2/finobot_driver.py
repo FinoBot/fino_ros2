@@ -17,7 +17,7 @@ class Driver(Node):
         self.serial_comm.open_connection()
 
     def send_serial_command(self, request, response):
-        self.get_logger().info('Incoming serial command request from ' + str(response.requester_name))
+        self.get_logger().info('Incoming serial command request')
 
         self.wrapper([request.command, 1])
 
