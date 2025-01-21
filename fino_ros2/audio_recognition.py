@@ -47,7 +47,7 @@ class AudioRecognition(Node):
 
     def start_listening(self):
         threading.Thread(target=self.process_audio, daemon=True).start()
-        with sd.RawInputStream(samplerate=48000, blocksize=8000, channels=1, dtype='int16', callback=self.audio_callback):
+        with sd.RawInputStream(samplerate=48000, blocksize=2000, channels=1, dtype='int16', callback=self.audio_callback):
             self.get_logger().info('Listening...')
             rclpy.spin(self)
 
