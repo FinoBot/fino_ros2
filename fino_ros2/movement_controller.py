@@ -29,6 +29,7 @@ class MovementController(Node):
         self.current_target = None
         self.current_state = None
         self.last_command = None
+        self.lost_person_counter = 0
         self.get_logger().info("Movement controller node initialized")
 
     def state_callback(self, msg):
