@@ -28,6 +28,7 @@ class MovementController(Node):
         self.client_futures = []
         self.current_target = None
         self.current_state = None
+        self.last_command = None
         self.get_logger().info("Movement controller node initialized")
 
     def state_callback(self, msg):
@@ -61,8 +62,11 @@ class MovementController(Node):
             self.get_logger().info("entering else, doing kbalance")
 
     def send_command(self, command):
+        if command == self.last_command:
+            return
         self.req.command = command
         self.client_futures.append(self.command_client.call_async(self.req))
+        self.last_command = command
 
 def main(args=None):
     rclpy.init(args=args)
