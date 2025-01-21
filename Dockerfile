@@ -2,8 +2,8 @@ FROM ros:humble-ros-core
 
 ENV ROS_DOMAIN_ID=158
 
-RUN apt update && apt install -y git python3-pip python3-colcon-common-extensions ros-humble-joy ros-humble-ament-cmake
-RUN pip3 install pyserial rosdep
+RUN apt update && apt install -y git python3-pip python3-colcon-common-extensions ros-humble-joy ros-humble-ament-cmake portaudio19-dev
+RUN pip3 install pyserial rosdep sounddevice vosk
 
 RUN mkdir -p /root/ros2_ws/src
 WORKDIR /root/ros2_ws

@@ -13,12 +13,17 @@ class MovementController(Node):
             self.state_callback,
             10
         )
+        self.subscription_state
+
         self.subscription_target = self.create_subscription(
             DetectedPerson,
             '/detected_person',
             self.person_callback,
             10
         )
+        self.subscription_target
+
+        self.state_instruction_reply = self.create_publisher(String, '/state_instruction_reply', 10)
         
         self.command_client = self.create_client(ExecuteCommand, "execute_command")
         while not self.command_client.wait_for_service(timeout_sec=1.0):
@@ -37,20 +42,38 @@ class MovementController(Node):
         if self.current_state == 'stop':
             self.send_command('kbalance')
 
+    def handle_person_lost(self):
+        if self.lost_person_counter > 25:
+            self.send_command('kbalance')
+            self.lost_person_counter = 0
+            self.get_logger().info("Person lost, stopping movement")
+            self.state_instruction_reply.publish(String(data='target_lost'))
+        else:
+            self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/25")
+            self.lost_person_counter += 1
+
     def person_callback(self, msg):
         self.current_target = msg.position
         self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
-        if self.current_state == 'move_to_person' or self.current_state == 'following':
+
+        if self.current_state == 'move_to_person':
             if msg.detected:
-                self.adjust_position(self.current_target)
-            else:
-                if self.lost_person_counter > 25:
-                    self.send_command('kbalance')
-                    self.lost_person_counter = 0
-                    self.get_logger().info("Person lost, stopping movement")
+                distance = msg.position.z
+                if distance < 1:
+                    self.get_logger().info("Arrived at target, Ask to change to stand_by state")
+                    self.state_instruction_reply.publish(String(data='target_reached'))
                 else:
-                    self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/25")
-                    self.lost_person_counter += 1
+                    self.adjust_position(self.current_target)
+            else:
+                self.handle_person_lost()
+        elif self.current_state == 'follow_person':
+            if msg.detected:
+                if distance < 1:
+                    self.send_command('kbalance')
+                else:
+                    self.adjust_position(self.current_target)
+            else:
+                self.handle_person_lost()
 
 
     def adjust_position(self, position):
