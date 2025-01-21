@@ -30,7 +30,7 @@ setup(
             'audio_recognition = fino_ros2.audio_recognition:main',
             'state_manager = fino_ros2.state_manager:main',
             'human_detector = fino_ros2.human_detection:main',
-            'movement_controller = fino_ros2.movement_controller:main',
+            'displacement_controller = fino_ros2.displacement_controller:main',
         ],
     },
 )

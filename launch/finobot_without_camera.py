@@ -11,8 +11,8 @@ def generate_launch_description():
         ),
         Node(
             package='fino_ros2',
-            executable='movement_controller',
-            name='movement_controller',
+            executable='displacement_controller',
+            name='displacement_controller',
             output='screen'
         ),
         Node(

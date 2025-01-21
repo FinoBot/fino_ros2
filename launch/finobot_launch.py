@@ -34,10 +34,10 @@ def generate_launch_description():
         output='screen'
     )
 
-    movement_controller = Node(
+    displacement_controller = Node(
         package='fino_ros2',
-        executable='movement_controller',
-        name='movement_controller',
+        executable='displacement_controller',
+        name='displacement_controller',
         output='screen'
     )
 
@@ -62,5 +62,5 @@ def generate_launch_description():
         audio_recognition,
         human_detector,
         state_manager,
-        movement_controller,
+        displacement_controller,
     ])

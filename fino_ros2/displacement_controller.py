@@ -4,9 +4,9 @@ from std_msgs.msg import String
 from fino_ros2_msgs.msg import DetectedPerson
 from fino_ros2_msgs.srv import ExecuteCommand
 
-class MovementController(Node):
+class DisplacementController(Node):
     def __init__(self):
-        super().__init__('movement_controller')
+        super().__init__('displacement_controller')
         self.subscription_state = self.create_subscription(
             String,
             '/state_command',
@@ -35,7 +35,7 @@ class MovementController(Node):
         self.current_state = None
         self.last_command = None
         self.lost_person_counter = 0
-        self.get_logger().info("Movement controller node initialized")
+        self.get_logger().info("Displacement controller node initialized")
 
     def state_callback(self, msg):
         self.current_state = msg.data
@@ -56,7 +56,7 @@ class MovementController(Node):
         self.current_target = msg.position
         #self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
 
-        if self.current_state == 'move_to_person':
+        if self.current_state == 'search_interaction':
             if msg.detected:
                 distance = msg.position.z
                 if distance < 1:
@@ -66,7 +66,7 @@ class MovementController(Node):
                     self.adjust_position(self.current_target)
             else:
                 self.handle_person_lost()
-        elif self.current_state == 'follow_person':
+        elif self.current_state == 'following':
             if msg.detected:
                 if distance < 1:
                     self.send_command('kbalance')
@@ -101,14 +101,14 @@ class MovementController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    movement_controller = MovementController()
+    displacement_controller = DisplacementController()
 
     try:
-        rclpy.spin(movement_controller)
+        rclpy.spin(displacement_controller)
     except KeyboardInterrupt:
         pass
     finally:
-        movement_controller.destroy_node()
+        displacement_controller.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':
