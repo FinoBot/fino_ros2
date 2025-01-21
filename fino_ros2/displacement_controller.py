@@ -7,13 +7,13 @@ from fino_ros2_msgs.srv import ExecuteCommand
 class DisplacementController(Node):
     def __init__(self):
         super().__init__('displacement_controller')
-        self.subscription_state = self.create_subscription(
+        self.instruction_subscription = self.create_subscription(
             String,
-            '/state_command',
-            self.state_callback,
+            '/send_state_instruction',
+            self.instruction_callback,
             10
         )
-        self.subscription_state
+        self.instruction_subscription
 
         self.subscription_target = self.create_subscription(
             DetectedPerson,
@@ -37,7 +37,7 @@ class DisplacementController(Node):
         self.lost_person_counter = 0
         self.get_logger().info("Displacement controller node initialized")
 
-    def state_callback(self, msg):
+    def instruction_callback(self, msg):
         self.current_state = msg.data
         if self.current_state == 'stop':
             self.send_command('kbalance')
