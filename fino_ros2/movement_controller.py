@@ -45,7 +45,7 @@ class MovementController(Node):
             if msg.detected:
                 self.adjust_position(self.current_target)
             else:
-                if self.lost_person_counter < 5:
+                if self.lost_person_counter > 5:
                     self.send_command('kbalance')
                     self.lost_person_counter = 0
                     self.get_logger().info("Person lost, stopping movement")
