@@ -33,6 +33,15 @@ class StateManager(Node):
         )
         self.state_instruction_reply
 
+
+        self.manual_state_change = self.create_subscription(
+            String,
+            'manual_state_change',
+            self.manual_state_change_callback,
+            10
+        )
+        self.manual_state_change
+
         # Publication des commandes d'état
         self.send_state_instruction = self.create_publisher(String, '/send_state_instruction', 10)
 
@@ -45,6 +54,9 @@ class StateManager(Node):
 
         # Timer pour gérer les états
         self.timer = self.create_timer(0.5, self.update_state)
+
+    def manual_state_change_callback(self, msg):
+        self.change_state(msg.data.lower())
 
     def detection_callback(self, msg):
         # Mise à jour de la position cible à partir de la détection
