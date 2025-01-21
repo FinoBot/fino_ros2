@@ -8,8 +8,6 @@ from std_msgs.msg import String
 import json
 import threading
 
-COMMANDS = ["suis-moi", "stop", "coucou", "salut"]
-
 class AudioRecognition(Node):
     def __init__(self):
         super().__init__('audio_recognition')

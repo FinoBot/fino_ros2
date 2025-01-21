@@ -75,18 +75,18 @@ class StateManager(Node):
             self.change_state('following')
         elif command == AUDIO_COMMANDS_STOP:
             self.change_state('stop')
-        elif command in AUDIO_COMMANDS_HI:
+        elif command in AUDIO_COMMANDS_HI and (self.state != 'move_to_person' or self.state != 'following'):
             self.change_state('hi')
 
     def state_instruction_reply_callback(self, msg):
         if self.state == 'move_to_person' and msg.data == 'target_reached':
-            self.get_logger().info("Received target_reached, switching to stand_by state")
+            self.get_logger().info("Received target_reached")
             self.change_state('stand_by')
         elif self.state == 'move_to_person' and msg.data == 'target_lost':
-            self.get_logger().info("Received target_lost from move_to_person, switching to search_interaction state")
+            self.get_logger().info("Received target_lost from move_to_person")
             self.change_state('search_interaction')
         elif self.state == "following" and msg.data == 'target_lost':
-            self.get_logger().info("Received target_lost from following, switching to stand_by state")
+            self.get_logger().info("Received target_lost from following")
             self.change_state('stand_by')
 
     def change_state(self, state):
@@ -112,9 +112,10 @@ class StateManager(Node):
 
         elif self.state == 'search_interaction':
             self.get_logger().info("Searching for interaction...")
-            if self.target_position and self.target_position.z > 1.5:
-                self.get_logger().info("Switching to move_to_person state")
+            if self.target_position and self.target_position.z > 1:
                 self.change_state('move_to_person')
+            elif self.target_position and self.target_position.z < 1:
+                self.change_state('stand_by')
 
         elif self.state == 'stop':
             time.sleep(1)
@@ -127,10 +128,14 @@ class StateManager(Node):
                 self.change_state('rest')
 
         elif self.state == 'rest':
+            self.send_command('krest')
             if self.target_position:
                 self.get_logger().info("New target after rest, switching to search_interaction state")
                 self.change_state('search_interaction')
                 self.send_command('kbalance')
+
+        elif self.state == 'move_to_person':
+            pass
 
         elif self.state == 'following':
             pass
