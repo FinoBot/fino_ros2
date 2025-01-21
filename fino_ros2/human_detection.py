@@ -39,7 +39,7 @@ class HumanDetector(Node):
                     new_detections[detection_id] = self.detection_history[detection_id]
                     new_detections[detection_id]["time"] = self.detection_history[detection_id]["time"]
                     new_detections[detection_id]["position"] = position
-                    self.get_logger().info(f"Updated position of person to follow:  x={round(position.x,2)}, z={round(position.z,2)}")
+                    #self.get_logger().info(f"Updated position of person to follow:  x={round(position.x,2)}, z={round(position.z,2)}")
                 else:
                     new_detections[detection_id] = {}
                     new_detections[detection_id]["time"] = current_time
