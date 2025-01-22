@@ -74,7 +74,7 @@ class DisplacementController(Node):
             if msg.detected:
                 self.lost_person_ts = None
                 self.lost_person_following_ts = None
-                if msg.position.z < 0.9:
+                if msg.position.z < 1.1:
                     self.get_logger().info("Arrived at target, Ask to change to stand_by state")
                     self.state_instruction_reply.publish(String(data='target_reached'))
                 else:
@@ -85,8 +85,9 @@ class DisplacementController(Node):
             if msg.detected:
                 self.lost_person_ts = None
                 self.lost_person_following_ts = None
-                if msg.position.z < 0.9:
+                if msg.position.z < 1.1:
                     self.send_command('kbalance')
+                    self.get_logger().info("displacement controller determined that the target is close enough")
                 else:
                     self.adjust_position(self.current_target)
             else:
@@ -103,11 +104,9 @@ class DisplacementController(Node):
             else:
                 self.send_command('kwkL')  # Turn left
                 self.get_logger().info("Adjusting position: turning left")
-        elif z > 0.9:
+        elif z > 1.1:
             self.send_command('kwkF')  # Move forward
             self.get_logger().info("Moving forward")
-        else:
-            self.send_command('kbalance')
 
     def send_command(self, command):
         if command == self.last_command:
