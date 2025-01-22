@@ -40,7 +40,7 @@ class AudioRecognition(Node):
         audio_data = np.frombuffer(indata, dtype=np.int16)
         
         # Apply gain to amplify the audio
-        gain = 3.0  # Adjust the gain factor as needed
+        gain = 100.0  # Adjust the gain factor as needed
         amplified_audio = np.clip(audio_data * gain, -32768, 32767).astype(np.int16)
         
         self.audio_queue.append(amplified_audio)
