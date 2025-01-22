@@ -6,7 +6,7 @@ RUN apt update && apt install -y git python3-pip python3-colcon-common-extension
 RUN python3 -m pip install wheel==0.37.1
 RUN pip3 install --force-reinstall cython==0.29.33
 RUN pip3 install --no-build-isolation git+https://github.com/lucasb-eyer/pydensecrf.git
-RUN pip3 install pyserial rosdep sounddevice cython SpeechRecognition pocketsphinx
+RUN pip3 install pyserial rosdep sounddevice  SpeechRecognition pocketsphinx
 
 RUN mkdir -p /root/ros2_ws/src
 WORKDIR /root/ros2_ws
