@@ -2,7 +2,8 @@ FROM ros:humble-ros-core
 
 ENV ROS_DOMAIN_ID=158
 
-RUN apt update && apt install -y git python3-pip python3-colcon-common-extensions ros-humble-joy ros-humble-ament-cmake portaudio19-dev ros-humble-depthai-ros
+RUN apt update && apt install -y git python3-pip python3-colcon-common-extensions ros-humble-joy ros-humble-ament-cmake portaudio19-dev ros-humble-depthai-ros build-essential swig libpulse-dev
+
 RUN pip3 install pyserial rosdep sounddevice SpeechRecognition pocketsphinx
 
 RUN mkdir -p /root/ros2_ws/src
