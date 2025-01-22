@@ -19,7 +19,7 @@ class AudioRecognition(Node):
     
         self.audio_commands = self.create_publisher(String, '/audio_commands', 10)
     
-        self.max_queue_size = 20  # Set a maximum size for the audio queue
+        self.max_queue_size = 10  # Set a maximum size for the audio queue
         self.packet_counter = 0  # Compteur pour les paquets
 
         self.get_logger().info('Audio Recognition Node has been started.')
@@ -30,7 +30,7 @@ class AudioRecognition(Node):
 
     def audio_callback(self, indata, frames, time, status):
         self.packet_counter += 1
-        if self.packet_counter % 2 != 0:  # Ignorer un paquet sur deux
+        if self.packet_counter % 5 != 0:  # Ignorer un paquet sur 5
             return
 
         
