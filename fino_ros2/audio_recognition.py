@@ -7,6 +7,7 @@ from vosk import Model, KaldiRecognizer
 from std_msgs.msg import String
 import json
 import threading
+from collections import deque
 
 class AudioRecognition(Node):
     def __init__(self):
@@ -22,17 +23,10 @@ class AudioRecognition(Node):
         self.max_queue_size = 10  # Set a maximum size for the audio queue
 
         self.get_logger().info('Audio Recognition Node has been started.')
-        self.audio_queue = []
+        self.audio_queue = deque()
 
     def listener_callback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.data)
-
-    # def audio_callback(self, indata, frames, time, status):
-    #     if status:
-    #         self.get_logger().error(str(status))
-        
-    #     audio_data = np.frombuffer(indata, dtype=np.int16)
-    #     self.audio_queue.append(audio_data)
 
     def audio_callback(self, indata, frames, time, status):
         if status:
@@ -44,17 +38,15 @@ class AudioRecognition(Node):
         gain = 3.0  # Adjust the gain factor as needed
         amplified_audio = np.clip(audio_data * gain, -32768, 32767).astype(np.int16)
         
-        self.audio_queue.append(amplified_audio)
         if len(self.audio_queue) < self.max_queue_size:
             self.audio_queue.append(amplified_audio)
         else:
             self.get_logger().warning('Audio queue is full, dropping audio data')
 
-
     def process_audio(self):
         while rclpy.ok():
             if self.audio_queue:
-                audio_data = self.audio_queue.pop(0)
+                audio_data = self.audio_queue.popleft()
                 if self.recognizer.AcceptWaveform(audio_data.tobytes()):
                     result = json.loads(self.recognizer.Result())
                     self.get_logger().info(result["text"])
