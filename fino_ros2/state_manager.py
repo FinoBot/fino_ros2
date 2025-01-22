@@ -4,8 +4,9 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from fino_ros2_msgs.srv import ExecuteCommand
 
-AUDIO_COMMANDS_FOLLOW = "suis-moi"
-AUDIO_COMMANDS_STOP = "stop"
+AUDIO_COMMAND_FOLLOW = "suis-moi"
+AUDIO_COMMAND_STOP = "stop"
+AUDIO_COMMAND_WAKE_UP = "debut"
 AUDIO_COMMANDS_HI = ["coucou", "salut", "hey"]
 
 class StateManager(Node):
@@ -71,10 +72,12 @@ class StateManager(Node):
         command = msg.data
         self.get_logger().info(f"Received audio command: {command}")
 
-        if command == AUDIO_COMMANDS_FOLLOW:
+        if command == AUDIO_COMMAND_FOLLOW:
             self.change_state('following')
-        elif command == AUDIO_COMMANDS_STOP:
+        elif command == AUDIO_COMMAND_STOP:
             self.change_state('stop')
+        elif command == AUDIO_COMMAND_WAKE_UP and self.state == "rest":
+            self.change_state('search_interaction')
         elif command in AUDIO_COMMANDS_HI and (self.state != 'search_interaction' or self.state != 'following'):
             self.change_state('hi')
 
@@ -110,7 +113,7 @@ class StateManager(Node):
             self.change_state('stand_by')
 
         elif self.state == 'search_interaction':
-            pass
+            self.last_action_time = time.time()
 
         elif self.state == 'stop':
             time.sleep(1)
@@ -124,13 +127,9 @@ class StateManager(Node):
 
         elif self.state == 'rest':
             self.send_command('krest')
-            if self.target_position:
-                self.get_logger().info("New target after rest, switching to search_interaction state")
-                self.change_state('search_interaction')
-                self.send_command('kbalance')
 
         elif self.state == 'following':
-            pass
+            self.last_action_time = time.time()
 
     def publish_command(self, command):
         msg = String()
