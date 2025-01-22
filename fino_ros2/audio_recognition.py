@@ -40,22 +40,14 @@ class AudioRecognition(Node):
         audio_data = np.frombuffer(indata, dtype=np.int16)
         
         # Apply gain to amplify the audio
-        gain = 2.0  # Adjust the gain factor as needed
+        gain = 3.0  # Adjust the gain factor as needed
         amplified_audio = np.clip(audio_data * gain, -32768, 32767).astype(np.int16)
         
         self.audio_queue.append(amplified_audio)
-
-
-        rms = np.sqrt(np.mean(amplified_audio**2))
-
-        # Normalize the RMS value to a scale of 0 to 100
-        max_rms = 32767
-        volume_percentage = (rms / max_rms) * 100
-        self.get_logger().info(f'Input volume: {volume_percentage:.2f}%')
-
-
-        if np.max(np.abs(amplified_audio)) > self.activation_threshold:
+        if len(self.audio_queue) < self.max_queue_size:
             self.audio_queue.append(amplified_audio)
+        else:
+            self.get_logger().warning('Audio queue is full, dropping audio data')
 
 
     def process_audio(self):
