@@ -3,26 +3,22 @@ import rclpy
 from rclpy.node import Node
 import sounddevice as sd
 import numpy as np
-from vosk import Model, KaldiRecognizer
+import speech_recognition as sr
 from std_msgs.msg import String
-import json
 import threading
+
+wordlist = ["suis-moi", "stop", "debout", "coucou", "salut", "hey"]
 
 class AudioRecognition(Node):
     def __init__(self):
         super().__init__('audio_recognition')
         self.get_logger().info(f'Current working directory: {os.getcwd()}')
-        model_path = '/root/ros2_ws/src/fino_ros2/model/vosk-model-small-fr-0.22'
-        self.model = Model(model_path)
-        self.recognizer = KaldiRecognizer(self.model, 48000)
-    
+        
+        self.recognizer = sr.Recognizer()
         self.audio_commands = self.create_publisher(String, '/audio_commands', 10)
 
         self.get_logger().info('Audio Recognition Node has been started.')
         self.audio_queue = []
-
-    def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
 
     def audio_callback(self, indata, frames, time, status):
         if status:
@@ -35,13 +31,19 @@ class AudioRecognition(Node):
         while rclpy.ok():
             if self.audio_queue:
                 audio_data = self.audio_queue.pop(0)
-                if self.recognizer.AcceptWaveform(audio_data.tobytes()):
-                    result = json.loads(self.recognizer.Result())
-                    self.get_logger().info(result["text"])
-                    if result["text"] != "":
+                audio_data = audio_data.tobytes()
+                audio = sr.AudioData(audio_data, 48000, 2)
+                try:
+                    result = self.recognizer.recognize_sphinx(audio, keyword_entries=[(word, 1.0) for word in wordlist])
+                    self.get_logger().info(result)
+                    if result != "":
                         msg = String()
-                        msg.data = result["text"]
+                        msg.data = result
                         self.audio_commands.publish(msg)
+                except sr.UnknownValueError:
+                    self.get_logger().info("Sphinx could not understand audio")
+                except sr.RequestError as e:
+                    self.get_logger().error(f"Sphinx error; {e}")
 
     def start_listening(self):
         threading.Thread(target=self.process_audio, daemon=True).start()
