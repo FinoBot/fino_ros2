@@ -46,7 +46,7 @@ class DisplacementController(Node):
             self.send_command('kbalance')
 
     def handle_person_lost(self):
-        lost_person_following_delay = 4
+        lost_person_following_delay = 3
         lost_person_delay = 25
 
         if self.lost_person_ts is None:
@@ -62,7 +62,7 @@ class DisplacementController(Node):
             self.lost_person_ts = None
         else:
             if self.lost_person_countdown != int(time.time() - self.lost_person_following_ts):
-                self.get_logger().info(f"Person lost, waiting  {abs(int(time.time() - self.lost_person_following_ts - 4))}s to recover")
+                self.get_logger().info(f"Person lost, waiting  {abs(int(time.time() - self.lost_person_following_ts - lost_person_following_delay+1))}s to recover")
             self.lost_person_countdown = int(time.time() - self.lost_person_following_ts)
 
     def person_callback(self, msg):
