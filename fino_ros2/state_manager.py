@@ -6,7 +6,7 @@ from fino_ros2_msgs.srv import ExecuteCommand
 
 AUDIO_COMMAND_FOLLOW = "suis-moi"
 AUDIO_COMMAND_STOP = "stop"
-AUDIO_COMMAND_WAKE_UP = "debut"
+AUDIO_COMMAND_WAKE_UP = "debout"
 AUDIO_COMMANDS_HI = ["coucou", "salut", "hey"]
 
 class StateManager(Node):
