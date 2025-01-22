@@ -61,9 +61,9 @@ class DisplacementController(Node):
             self.state_instruction_reply.publish(String(data='target_lost'))
             self.lost_person_ts = None
         else:
-            if self.lost_person_countdown != int(4 - time.time() - self.lost_person_following_ts):
-                self.get_logger().info(f"Person lost, waiting  {int(4 - time.time() - self.lost_person_following_ts)}s to recover")
-            self.lost_person_countdown = int(4 - time.time() - self.lost_person_following_ts)
+            if self.lost_person_countdown != int(time.time() - self.lost_person_following_ts):
+                self.get_logger().info(f"Person lost, waiting  {abs(int(time.time() - self.lost_person_following_ts - 4))}s to recover")
+            self.lost_person_countdown = int(time.time() - self.lost_person_following_ts)
 
     def person_callback(self, msg):
         self.current_target = msg.position
