@@ -44,6 +44,16 @@ class AudioRecognition(Node):
         amplified_audio = np.clip(audio_data * gain, -32768, 32767).astype(np.int16)
         
         self.audio_queue.append(amplified_audio)
+
+
+        rms = np.sqrt(np.mean(amplified_audio**2))
+
+        # Normalize the RMS value to a scale of 0 to 100
+        max_rms = 32767
+        volume_percentage = (rms / max_rms) * 100
+        self.get_logger().info(f'Input volume: {volume_percentage:.2f}%')
+
+
         if np.max(np.abs(amplified_audio)) > self.activation_threshold:
             self.audio_queue.append(amplified_audio)
 
