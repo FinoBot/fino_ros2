@@ -102,7 +102,6 @@ class StateManager(Node):
         if self.state == 'initialization':
             self.get_logger().info("Checking topics and services...")
             # Initialisation logic
-            self.send_command('kbalance')
             time.sleep(1)
             self.change_state('search_interaction')
 
@@ -114,6 +113,7 @@ class StateManager(Node):
 
         elif self.state == 'search_interaction':
             self.last_action_time = time.time()
+            self.send_command('kbalance')
 
         elif self.state == 'stop':
             time.sleep(1)
@@ -130,6 +130,8 @@ class StateManager(Node):
 
         elif self.state == 'following':
             self.last_action_time = time.time()
+            self.send_command('kbalance')
+
 
     def publish_command(self, command):
         msg = String()
