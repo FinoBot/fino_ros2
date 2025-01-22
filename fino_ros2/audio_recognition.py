@@ -38,9 +38,7 @@ class AudioRecognition(Node):
         
         if len(self.audio_queue) < self.max_queue_size:
             self.audio_queue.append(amplified_audio)
-        else:
-            self.get_logger().warning('Audio queue is full, dropping audio data')
-
+        
     def process_audio(self):
         while rclpy.ok():
             if self.audio_queue:
