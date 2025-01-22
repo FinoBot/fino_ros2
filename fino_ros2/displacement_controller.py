@@ -3,6 +3,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from fino_ros2_msgs.msg import DetectedPerson
 from fino_ros2_msgs.srv import ExecuteCommand
+import time
 
 class DisplacementController(Node):
     def __init__(self):
@@ -34,7 +35,9 @@ class DisplacementController(Node):
         self.current_target = None
         self.current_state = None
         self.last_command = None
-        self.lost_person_counter = 0
+        self.lost_person_ts = None
+        self.lost_person_following_ts = None
+        self.lost_person_countdown = 0
         self.get_logger().info("Displacement controller node initialized")
 
     def instruction_callback(self, msg):
@@ -43,21 +46,33 @@ class DisplacementController(Node):
             self.send_command('kbalance')
 
     def handle_person_lost(self):
-        if self.lost_person_counter > 25:
+        lost_person_following_delay = 4
+        lost_person_delay = 25
+
+        if self.lost_person_ts is None:
+            self.lost_person_ts = time.time()
+        if self.lost_person_following_ts is None:
+            self.lost_person_following_ts = time.time()
+
+        if time.time() - self.lost_person_following_ts > lost_person_following_delay:
             self.send_command('kbalance')
-            self.lost_person_counter = 0
+        elif time.time() - self.lost_person_ts > lost_person_delay:
             self.get_logger().info("Person lost, stopping movement")
             self.state_instruction_reply.publish(String(data='target_lost'))
+            self.lost_person_ts = None
         else:
-            self.get_logger().info(f"Person lost, continuing movement {self.lost_person_counter}/25")
-            self.lost_person_counter += 1
+            if self.lost_person_countdown != int(4 - time.time() - self.lost_person_following_ts):
+                self.get_logger().info(f"Person lost, waiting  {int(4 - time.time() - self.lost_person_following_ts)}s to recover")
+            self.lost_person_countdown = int(4 - time.time() - self.lost_person_following_ts)
 
     def person_callback(self, msg):
         self.current_target = msg.position
+
         #self.get_logger().info(f"current_state: {self.current_state} and current_target: {self.current_target}")
 
         if self.current_state == 'search_interaction':
             if msg.detected:
+                self.lost_person_ts = None
                 if msg.position.z < 1:
                     self.get_logger().info("Arrived at target, Ask to change to stand_by state")
                     self.state_instruction_reply.publish(String(data='target_reached'))
@@ -67,6 +82,8 @@ class DisplacementController(Node):
                 self.handle_person_lost()
         elif self.current_state == 'following':
             if msg.detected:
+                self.lost_person_following_ts = None
+                self.lost_person_ts = None
                 if msg.position.z < 1:
                     self.send_command('kbalance')
                 else:
