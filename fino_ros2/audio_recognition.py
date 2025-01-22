@@ -19,6 +19,7 @@ class AudioRecognition(Node):
         self.audio_commands = self.create_publisher(String, '/audio_commands', 10)
     
         self.activation_threshold = 1000  # Adjust the threshold as needed
+        self.max_queue_size = 10  # Set a maximum size for the audio queue
 
         self.get_logger().info('Audio Recognition Node has been started.')
         self.audio_queue = []
