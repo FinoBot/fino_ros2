@@ -17,6 +17,8 @@ class AudioRecognition(Node):
         self.recognizer = KaldiRecognizer(self.model, 48000)
     
         self.audio_commands = self.create_publisher(String, '/audio_commands', 10)
+    
+        self.activation_threshold = 1000  # Adjust the threshold as needed
 
         self.get_logger().info('Audio Recognition Node has been started.')
         self.audio_queue = []
@@ -42,6 +44,8 @@ class AudioRecognition(Node):
         amplified_audio = np.clip(audio_data * gain, -32768, 32767).astype(np.int16)
         
         self.audio_queue.append(amplified_audio)
+        if np.max(np.abs(amplified_audio)) > self.activation_threshold:
+            self.audio_queue.append(amplified_audio)
 
 
     def process_audio(self):
