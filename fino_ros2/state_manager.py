@@ -76,7 +76,7 @@ class StateManager(Node):
             self.change_state('following')
         elif command == AUDIO_COMMAND_STOP:
             self.change_state('stop')
-        elif command == AUDIO_COMMAND_WAKE_UP and self.state == "rest":
+        elif command == AUDIO_COMMAND_WAKE_UP and (self.state == "rest" or self.state == "stand_by"):
             self.change_state('search_interaction')
         elif command in AUDIO_COMMANDS_HI and (self.state != 'search_interaction' or self.state != 'following'):
             self.change_state('hi')
